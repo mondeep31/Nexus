@@ -1,32 +1,34 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import HomeCard from "./HomeCard";
-import { useRouter } from "next/navigation";
 import MeetingModal from "./MeetingModal";
-import { useUser } from "@clerk/nextjs";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
-import { useToast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/nextjs";
+import Loader from "./Loader";
 import { Textarea } from "@/components/ui/textarea";
 import ReactDatePicker from "react-datepicker";
 import { Input } from "./ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
+const initialValues = {
+  dateTime: new Date(),
+  description: "",
+  link: "",
+};
 const MeetingTypeList = () => {
   const router = useRouter();
   const [meetingState, setMeetingState] = useState<
     "isScheduleMeeting" | "isJoiningMeeting" | "isInstantMeeting" | undefined
-  >();
-  const { user } = useUser();
-  const client = useStreamVideoClient();
-  const [values, setValues] = useState({
-    dateTime: new Date(),
-    description: "",
-    link: "",
-  });
-
+  >(undefined);
+  const [values, setValues] = useState(initialValues);
   const [callDetails, setCallDetails] = useState<Call>();
+  const client = useStreamVideoClient();
+  const { user } = useUser();
   const { toast } = useToast();
+
   const createMeeting = async () => {
     if (!client || !user) return;
     try {
@@ -62,6 +64,8 @@ const MeetingTypeList = () => {
       });
     }
   };
+
+  if (!client || !user) return <Loader />;
 
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetails?.id}`;
   return (
@@ -172,8 +176,3 @@ const MeetingTypeList = () => {
 };
 
 export default MeetingTypeList;
-function getOrCreate(arg0: {
-  data: { starts_at: string; custom: { description: string } };
-}) {
-  throw new Error("Function not implemented.");
-}
